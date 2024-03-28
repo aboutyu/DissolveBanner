@@ -10,7 +10,7 @@ import UIKit
 
 open class THDisolveBanner: UIView {
     
-    private var bannerImage = [String]()
+    private var bannerImage = [Any]()
     private var bannerStr = [String]()
     private var timer: Timer?
     private var num: Int = 0
@@ -42,7 +42,7 @@ open class THDisolveBanner: UIView {
     }
     
     // 이미지를 세팅한다.
-    open func setImage(images: [String], str: [String]) {
+    open func setImage(images: [Any], str: [String]) {
         
         if images.isEmpty == false && images.count == str.count {
             bannerImage.removeAll()
@@ -54,8 +54,6 @@ open class THDisolveBanner: UIView {
             num = (bannerImage.count) - 1
         }
     }
-    
-    
     
     // 애니메이션을 시작한다.
     open func startAnimate() {
@@ -90,19 +88,28 @@ open class THDisolveBanner: UIView {
         }
     }
     
-    private func moveImage(image: String?, str: String?) {
+    private func moveImage(image: Any?, str: String?) {
         
-        if let img = image {
+        let imgs: UIImage? = {
+            if let urlString = image as? String {
+                let imgUrl = URL(string: urlString)!
+                if let req = try? Data(contentsOf: imgUrl) {
+                    return UIImage(data: req)
+                }
+            } else if let uiImage = image as? UIImage {
+                return uiImage
+            }
+            return nil
+        }()
+        
+//        if let img = image {
+        if let img = imgs {
 
             let imgWidth = self.frame.size.width + rangeMove
             let imgView = UIImageView(frame: CGRect(x: 0, y: 0, width: imgWidth, height: self.frame.size.height))
             imgView.frame.origin.x = 0
             imgView.alpha = 0.2
-
-            let imgUrl = URL(string: img)!
-            if let req = try? Data(contentsOf: imgUrl) {
-                imgView.image = UIImage(data: req)
-            }
+            imgView.image = img
             self.addSubview(imgView)
             
             UIView.animate(withDuration: disolveInterval) {
